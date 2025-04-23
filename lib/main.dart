@@ -1,38 +1,30 @@
 import 'package:flutter/material.dart';
+import 'package:kissima/pages/forgot_password.dart';
+import 'package:kissima/pages/password_reset.dart';
+import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:kissima/pages/splash_screen.dart';
+import 'package:kissima/pages/login.dart';
+import 'package:kissima/pages/register.dart';
+import 'package:kissima/pages/schedule.dart';
+import 'package:kissima/pages/settings.dart';
+import 'package:kissima/pages/home.dart';
 import 'package:kissima/providers/auth_provider.dart';
 import 'package:kissima/providers/schedule_provider.dart';
 import 'package:kissima/providers/settings_provider.dart';
-import 'package:provider/provider.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-
-import 'pages/schedule.dart';
-import 'pages/settings.dart';
-import 'pages/login.dart';
-// Create this file
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-
-  // await SharedPreferences.getInstance();
-
-  // Initialize SharedPreferences
   final prefs = await SharedPreferences.getInstance();
 
   runApp(
     MultiProvider(
       providers: [
-        ChangeNotifierProvider(
-          create: (_) => AuthProvider(),
-        ),
-        ChangeNotifierProvider(
-          create: (_) => SettingsProvider(prefs: prefs),
-        ),
-        ChangeNotifierProvider(
-          create: (context) => FeedingScheduleProvider(),
-        )
+        ChangeNotifierProvider(create: (_) => AuthProvider()),
+        ChangeNotifierProvider(create: (_) => SettingsProvider(prefs: prefs)),
+        ChangeNotifierProvider(create: (_) => FeedingScheduleProvider(prefs)),
       ],
-      child: SmartPetFeederApp(),
+      child: const SmartPetFeederApp(),
     ),
   );
 }
@@ -42,103 +34,33 @@ class SmartPetFeederApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      title: 'Smart Pet Feeder',
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
-      ),
-      home: const MySplashScreen(),
-    );
-  }
-}
-
-class HomeScreen extends StatelessWidget {
-  final String title = 'Smart Pet Feeder Dashboard';
-
-  const HomeScreen({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(title, style: const TextStyle(color: Colors.white)),
-        backgroundColor: Colors.blueAccent,
-      ),
-      drawer: const AppDrawer(),
-      body: const Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            Text('Welcome to Smart Pet Feeder!'),
-            SizedBox(height: 20),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-// Update your AppDrawer logout functionality
-class AppDrawer extends StatelessWidget {
-  const AppDrawer({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    final authProvider = Provider.of<AuthProvider>(context, listen: false);
-
-    return Drawer(
-      child: ListView(
-        children: <Widget>[
-          DrawerHeader(
-            decoration: BoxDecoration(
-                color: Colors.blueAccent,
-                borderRadius:
-                    const BorderRadius.only(bottomRight: Radius.circular(20))),
-            child: const Text(
-              'Menu',
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 24,
-              ),
-            ),
+    return Consumer<SettingsProvider>(
+      builder: (context, settingsProvider, child) {
+        return MaterialApp(
+          debugShowCheckedModeBanner: false,
+          title: 'Smart Pet Feeder',
+          theme: ThemeData(
+            primarySwatch: Colors.blue,
+            brightness: Brightness.light,
           ),
-          ListTile(
-            leading: const Icon(Icons.schedule),
-            title: const Text('Schedule Feedings'),
-            onTap: () {
-              // Navigate to schedule screen
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => const ScheduleScreen()),
-              );
-            },
+          darkTheme: ThemeData(
+            primarySwatch: Colors.blue,
+            brightness: Brightness.dark,
           ),
-          ListTile(
-            leading: const Icon(Icons.settings),
-            title: const Text('Settings'),
-            onTap: () {
-              // Navigate to settings screen
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => const SettingsScreen()),
-              );
-            },
-          ),
-          ListTile(
-            leading: const Icon(Icons.logout),
-            title: const Text('Logout'),
-            onTap: () {
-              authProvider.logout();
-              Navigator.pushAndRemoveUntil(
-                context,
-                MaterialPageRoute(builder: (context) => const LoginPage()),
-                (route) => false,
-              );
-            },
-          ),
-        ],
-      ),
+          themeMode: settingsProvider.themeMode,
+          initialRoute: '/splash',
+          routes: {
+            '/splash': (context) => const MySplashScreen(),
+            '/login': (context) => const LoginPage(),
+            '/register': (context) => const RegisterPage(),
+            '/home': (context) => const HomeScreen(),
+            '/schedule': (context) => const ScheduleScreen(),
+            '/settings': (context) => const SettingsScreen(),
+            '/forgot-password': (context) => const ForgotPasswordScreen(),
+            '/password-reset': (context) => const PasswordResetScreen(),
+          },
+        );
+      },
     );
   }
 }

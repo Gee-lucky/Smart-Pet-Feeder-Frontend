@@ -1,16 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
+import '../providers/schedule_provider.dart';
+import '../providers/auth_provider.dart';
 
-import '../providers/schedule_provider.dart'; // For time formatting
-
-// Data Model: Feeding Schedule Entry
 class FeedingScheduleEntry {
   DateTime time;
-  double portion; // Customizable portion size (e.g., in cups or grams)
-  List<bool> daysOfWeek; // [Mon, Tue, Wed, Thu, Fri, Sat, Sun] (for recurring)
-  bool isEnabled; // To pause/resume this specific entry
-  String label; // a custom label to identify this entry
+  double portion;
+  List<bool> daysOfWeek;
+  bool isEnabled;
+  String label;
 
   FeedingScheduleEntry({
     required this.time,
@@ -21,11 +20,27 @@ class FeedingScheduleEntry {
   });
 
   String getFormattedTime() {
-    return DateFormat.jm().format(time); // Format as 1:00 PM
+    return DateFormat.jm().format(time);
   }
+
+  Map<String, dynamic> toJson() => {
+    'time': time.toIso8601String(),
+    'portion': portion,
+    'daysOfWeek': daysOfWeek,
+    'isEnabled': isEnabled,
+    'label': label,
+  };
+
+  factory FeedingScheduleEntry.fromJson(Map<String, dynamic> json) =>
+      FeedingScheduleEntry(
+        time: DateTime.parse(json['time']),
+        portion: json['portion'],
+        daysOfWeek: List<bool>.from(json['daysOfWeek']),
+        isEnabled: json['isEnabled'],
+        label: json['label'],
+      );
 }
 
-// Widget for Displaying a Single Schedule Entry
 class ScheduleEntryWidget extends StatelessWidget {
   final FeedingScheduleEntry entry;
   final VoidCallback onToggleEnabled;
@@ -52,12 +67,89 @@ class ScheduleEntryWidget extends StatelessWidget {
           color: entry.isEnabled ? Colors.orange : Colors.green,
         ),
         title: Text('Time: ${entry.getFormattedTime()}'),
-        subtitle: Text('Portion: ${entry.portion}, Label: ${entry.label}'),
+        subtitle: Text('Portion: ${entry.portion} cups, Label: ${entry.label}'),
         trailing: IconButton(
           icon: const Icon(Icons.delete, color: Colors.red),
           onPressed: onDelete,
         ),
       ),
+    );
+  }
+}
+
+class ScheduleTimeline extends StatelessWidget {
+  final List<FeedingScheduleEntry> entries;
+
+  const ScheduleTimeline({super.key, required this.entries});
+
+  @override
+  Widget build(BuildContext context) {
+    final sortedEntries = entries..sort((a, b) => a.time.compareTo(b.time));
+    return ListView.builder(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      itemCount: sortedEntries.length,
+      itemBuilder: (context, index) {
+        final entry = sortedEntries[index];
+        return TimelineTile(
+          time: entry.getFormattedTime(),
+          title: entry.label,
+          subtitle: '${entry.portion} cups',
+          isEnabled: entry.isEnabled,
+        );
+      },
+    );
+  }
+}
+
+class TimelineTile extends StatelessWidget {
+  final String time;
+  final String title;
+  final String subtitle;
+  final bool isEnabled;
+
+  const TimelineTile({
+    super.key,
+    required this.time,
+    required this.title,
+    required this.subtitle,
+    required this.isEnabled,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        SizedBox(
+          width: 100,
+          child: Text(
+            time,
+            style: const TextStyle(fontWeight: FontWeight.bold),
+          ),
+        ),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                title,
+                style: TextStyle(
+                  fontSize: 16,
+                  color: isEnabled ? Colors.black : Colors.grey,
+                ),
+              ),
+              Text(
+                subtitle,
+                style: TextStyle(
+                  color: isEnabled ? Colors.black54 : Colors.grey,
+                ),
+              ),
+              const Divider(),
+            ],
+          ),
+        ),
+      ],
     );
   }
 }
@@ -70,92 +162,86 @@ class ScheduleScreen extends StatefulWidget {
 }
 
 class _ScheduleScreenState extends State<ScheduleScreen> {
-  List<FeedingScheduleEntry> scheduleEntries = [];
+  Future<void> _showAddFeedingDialog(BuildContext context) async {
+    final provider = Provider.of<FeedingScheduleProvider>(context, listen: false);
+    final timeController = TextEditingController(
+        text: DateFormat.Hm().format(DateTime.now()));
+    final portionController = TextEditingController(text: '0.25');
+    final labelController = TextEditingController(text: 'New Feeding');
+    final daysOfWeek = List<bool>.filled(7, true);
 
-  @override
-  void initState() {
-    super.initState();
-    // Initialize with some sample schedule entries
-    scheduleEntries.addAll([
-      FeedingScheduleEntry(
-        time: DateTime.now().add(const Duration(hours: 1)),
-        portion: 0.5,
-        daysOfWeek: [true, true, true, true, true, true, true],
-        label: 'Morning Feeding',
+    await showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Add Feeding Schedule'),
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                controller: timeController,
+                decoration: const InputDecoration(labelText: 'Time (HH:mm)'),
+                readOnly: true,
+                onTap: () async {
+                  final time = await showTimePicker(
+                    context: context,
+                    initialTime: TimeOfDay.now(),
+                  );
+                  if (time != null) {
+                    timeController.text = time.format(context);
+                  }
+                },
+              ),
+              TextField(
+                controller: portionController,
+                decoration: const InputDecoration(labelText: 'Portion (cups)'),
+                keyboardType: TextInputType.number,
+              ),
+              TextField(
+                controller: labelController,
+                decoration: const InputDecoration(labelText: 'Label'),
+              ),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () {
+              final time = DateFormat.Hm().parse(timeController.text);
+              provider.addEntry(
+                FeedingScheduleEntry(
+                  time: DateTime.now().copyWith(
+                    hour: time.hour,
+                    minute: time.minute,
+                  ),
+                  portion: double.parse(portionController.text),
+                  daysOfWeek: daysOfWeek,
+                  label: labelController.text,
+                ),
+              );
+              Navigator.pop(context);
+            },
+            child: const Text('Add'),
+          ),
+        ],
       ),
-      FeedingScheduleEntry(
-        time: DateTime.now().add(const Duration(hours: 5)),
-        portion: 0.75,
-        daysOfWeek: [true, true, true, true, true, true, true],
-        label: 'Evening Feeding',
-      ),
-    ]);
+    );
   }
 
-//   @override
-//   Widget build(BuildContext context) {
-//     return Scaffold(
-//       appBar: AppBar(
-//         title: const Text(
-//           'Schedule Feedings',
-//           style: TextStyle(color: Colors.white),
-//         ),
-//         backgroundColor: Colors.blueAccent,
-//       ),
-//       body: Padding(
-//         padding: const EdgeInsets.all(16.0),
-//         child: Column(
-//           crossAxisAlignment: CrossAxisAlignment.stretch,
-//           children: [
-//             // Title
-//             const Text(
-//               'Your Feeding Schedule',
-//               style: TextStyle(
-//                 fontSize: 24,
-//                 fontWeight: FontWeight.bold,
-//               ),
-//             ),
-//             const SizedBox(height: 16),
-//             // Schedule List
-//             Expanded(
-//               child: ListView.builder(
-//                 itemCount: scheduleEntries.length,
-//                 itemBuilder: (context, index) {
-//                   return ScheduleEntryWidget(
-//                     entry: scheduleEntries[index],
-//                     onToggleEnabled: () => _toggleScheduleEntryEnabled(index),
-//                     onDelete: () => _deleteScheduleEntry(index),
-//                   );
-//                 },
-//               ),
-//             ),
-//             const SizedBox(height: 16),
-//             // Buttons
-//             Row(
-//               mainAxisAlignment: MainAxisAlignment.spaceBetween,
-//               children: [
-//                 ElevatedButton.icon(
-//                   onPressed: () {
-//                     // Implement "Feed Now" logic here
-//                   },
-//                   icon: const Icon(Icons.fastfood, color: Colors.white),
-//                   label: const Text('Feed Now', style: TextStyle(color: Colors.white)),
-//                   style: ElevatedButton.styleFrom(backgroundColor: Colors.green),
-//                 ),
-//                 ElevatedButton.icon(
-//                   onPressed: _addScheduleEntry,
-//                   icon: const Icon(Icons.add, color: Colors.white),
-//                   label: const Text('Add Feeding', style: TextStyle(color: Colors.white)),
-//                   style: ElevatedButton.styleFrom(backgroundColor: Colors.blueAccent),
-//                 ),
-//               ],
-//             ),
-//           ],
-//         ),
-//       ),
-//     );
-//   }
-// }
+  Future<void> _handleFeedNow() async {
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
+    final result = await authProvider.feed(0.25); // Default portion
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(result['message'])),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -182,17 +268,27 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
             Expanded(
               child: Consumer<FeedingScheduleProvider>(
                 builder: (context, provider, child) {
-                  return ListView.builder(
-                    itemCount: provider.scheduleEntries.length,
-                    itemBuilder: (context, index) {
-                      final entry = provider.scheduleEntries[index];
-                      return ScheduleEntryWidget(
-                        entry: entry,
-                        onToggleEnabled: () =>
-                            provider.toggleEntryEnabled(index),
-                        onDelete: () => provider.deleteEntry(index),
-                      );
-                    },
+                  return SingleChildScrollView(
+                    child: Column(
+                      children: [
+                        ScheduleTimeline(entries: provider.scheduleEntries),
+                        const SizedBox(height: 16),
+                        ListView.builder(
+                          shrinkWrap: true,
+                          physics: const NeverScrollableScrollPhysics(),
+                          itemCount: provider.scheduleEntries.length,
+                          itemBuilder: (context, index) {
+                            final entry = provider.scheduleEntries[index];
+                            return ScheduleEntryWidget(
+                              entry: entry,
+                              onToggleEnabled: () =>
+                                  provider.toggleEntryEnabled(index),
+                              onDelete: () => provider.deleteEntry(index),
+                            );
+                          },
+                        ),
+                      ],
+                    ),
                   );
                 },
               ),
@@ -204,30 +300,15 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     ElevatedButton.icon(
-                      onPressed: () {},
+                      onPressed: _handleFeedNow,
                       icon: const Icon(Icons.fastfood, color: Colors.white),
                       label: const Text('Feed Now',
                           style: TextStyle(color: Colors.white)),
-                      style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.green),
+                      style:
+                      ElevatedButton.styleFrom(backgroundColor: Colors.green),
                     ),
                     ElevatedButton.icon(
-                      onPressed: () => provider.addEntry(
-                        FeedingScheduleEntry(
-                          time: DateTime.now(),
-                          portion: 0.25,
-                          daysOfWeek: [
-                            true,
-                            true,
-                            true,
-                            true,
-                            true,
-                            true,
-                            true
-                          ],
-                          label: 'New Entry',
-                        ),
-                      ),
+                      onPressed: () => _showAddFeedingDialog(context),
                       icon: const Icon(Icons.add, color: Colors.white),
                       label: const Text('Add Feeding',
                           style: TextStyle(color: Colors.white)),

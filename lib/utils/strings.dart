@@ -1,28 +1,38 @@
-class Hints {
-  static String hintFirstNameTxt = "Enter your Firstname";
-  static String hintMiddleNameTxt = "Enter your MiddleName";
-  static String hintSurnameTxt = "Enter your Surname";
-  static String hintContactTxt = "Enter your Contact";
-  static String hintEmailTxt = "Enter your email";
-  static String hintPasswordTxt = "Enter your password";
-  static String hintConfirmPasswordTxt = "Confirm your password";
-}
-
-class Labels {
-  static String emailLabel = "Email";
-  static String passwordLabel = "Password";
-  static String firstnameLabel = "First Name";
-  static String middleNameLabel = "Middle Name";
-  static String contactLabel = "Phone";
-  static String surnameLabel = "Surname";
-  static String confirmPasswordLabel = "Confirm Password";
-}
-
 class Strings {
-  static String login = "Login";
-  static String register = "Register";
-  static String forgotPassword = "Forgot Password";
-  static String loginTitle = "Login";
-  static String registerTitle = "Register";
-  static String forgotPasswordTitle = "Forgot Password";
+  static const loginTitle = 'Login';
+  static const registerTitle = 'Register';
+  static const forgotPasswordTitle = 'Forgot Password';
+  static const resetPasswordTitle = 'Reset Password';
+  static const forgotPasswordInstruction = 'Enter your email to receive a password reset link';
+  static const resetPasswordInstruction = 'Enter the token and new password';
+  static const hintFirstnameTxt = 'Enter your first name';
+  static const firstnameLabel = 'First Name';
+  static const emptyFirstnameError = 'Please enter your first name';
+  static const hintMiddleNameTxt = 'Enter your middle name';
+  static const middleNameLabel = 'Middle Name';
+  static const hintSurnameTxt = 'Enter your surname';
+  static const surnameLabel = 'Surname';
+  static const hintEmailTxt = 'Enter your email';
+  static const emailLabel = 'Email';
+  static const emptyEmailError = 'Please enter your email';
+  static const invalidEmailError = 'Please enter a valid email';
+  static const hintContactTxt = 'Enter your phone number';
+  static const contactLabel = 'Phone Number';
+  static const hintPasswordTxt = 'Enter your password';
+  static const passwordLabel = 'Password';
+  static const newPasswordLabel = 'New Password';
+  static const emptyPasswordError = 'Please enter your password';
+  static const shortPasswordError = 'Password must be at least 6 characters';
+  static const hintConfirmPasswordTxt = 'Confirm your password';
+  static const confirmPasswordLabel = 'Confirm Password';
+  static const emptyConfirmPasswordError = 'Please confirm your password';
+  static const passwordMismatchError = 'Passwords do not match';
+  static const loginButtonTxt = 'Login';
+  static const registerButtonTxt = 'Register';
+  static const sendResetEmailButtonTxt = 'Send Reset Email';
+  static const resetPasswordButtonTxt = 'Reset Password';
+  static const forgotPasswordTxt = 'Forgot Password?';
+  static const noAccountTxt = 'Don’t have an account? ';
+  static const signUpTxt = 'Sign Up';
+  static const orTxt = 'Or';
 }

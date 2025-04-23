@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/src/shared_preferences_legacy.dart';
 
 import '../pages/schedule.dart';
 
@@ -7,7 +8,7 @@ class FeedingScheduleProvider extends ChangeNotifier {
 
   List<FeedingScheduleEntry> get scheduleEntries => _scheduleEntries;
 
-  FeedingScheduleProvider() {
+  FeedingScheduleProvider(SharedPreferences prefs) {
     // Initialize with sample data
     _scheduleEntries.addAll([
       FeedingScheduleEntry(
