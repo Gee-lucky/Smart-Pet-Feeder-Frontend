@@ -1,6 +1,6 @@
 class AppUrl {
   static const String liveBaseURL = "https://your-production-url/api/v1";
-  static const String localBaseURL = "http://127.0.0.1:8000/api/v1"; // Replace with your server’s IP
+  static const String localBaseURL = "http://localhost:8000/api/v1"; // Replace with your server’s IP
   static const String baseURL = localBaseURL;
   static const String login = "$baseURL/auth/login/";
   static const String register = "$baseURL/auth/register/";

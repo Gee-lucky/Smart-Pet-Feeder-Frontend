@@ -3,6 +3,8 @@ import 'package:http/http.dart' as http;
 import 'app_urls.dart';
 
 class AuthRequests {
+
+  static const String baseUrl = 'http://localhost:8000/api/v1/auth';
   static Future<http.Response> login(Map<String, dynamic> data) async {
     final url = Uri.parse(AppUrl.login);
     try {
