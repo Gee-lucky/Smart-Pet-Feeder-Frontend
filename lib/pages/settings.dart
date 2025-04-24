@@ -33,11 +33,12 @@ class SettingsScreenState extends State<SettingsScreen> {
       return;
     }
 
-    final result = await authProvider.updateProfile(
-      firstName: _firstNameController.text,
-      email: _emailController.text,
-      phoneNumber: _phoneController.text,
-    );
+    final profileData = {
+      'first_name': _firstNameController.text,
+      'email': _emailController.text,
+      'phone_number': _phoneController.text,
+    };
+    final result = await authProvider.updateProfile(profileData);
 
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -129,7 +130,7 @@ class SettingsScreenState extends State<SettingsScreen> {
                           if (value == null || value.isEmpty) {
                             return 'Please enter your email';
                           }
-                          if (!RegExp(r'^[\w-.]+@([\w-]+\.)+[\w-]{2,4}$')
+                          if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$')
                               .hasMatch(value)) {
                             return 'Please enter a valid email';
                           }

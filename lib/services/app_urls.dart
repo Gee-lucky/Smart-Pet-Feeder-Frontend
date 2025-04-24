@@ -9,5 +9,6 @@ class AppUrl {
   static const String resetPassword = "$baseURL/auth/reset-password/";
   static const String feed = "$baseURL/auth/feed/";
   static const String profile = "$baseURL/auth/profile/";
-  static const String tokenRefresh = "$baseURL/token/refresh/";
+  static const String refreshToken = "$baseURL/token/refresh/";
+  static const String forgotPassword = "$baseURL/auth/forgot-password/";
 }

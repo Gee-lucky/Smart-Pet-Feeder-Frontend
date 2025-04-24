@@ -1,188 +1,116 @@
 import 'package:flutter/material.dart';
-import 'package:kissima/utils/strings.dart';
-import 'package:kissima/widgets/custom_widgets.dart';
 import 'package:provider/provider.dart';
+import '../utils/strings.dart';
+import '../widgets/custom_widgets.dart';
 import '../providers/auth_provider.dart';
 
 class PasswordResetScreen extends StatefulWidget {
   const PasswordResetScreen({super.key});
 
   @override
-  State<PasswordResetScreen> createState() => _PasswordResetScreenState();
+  PasswordResetScreenState createState() => PasswordResetScreenState();
 }
 
-class _PasswordResetScreenState extends State<PasswordResetScreen> {
+class PasswordResetScreenState extends State<PasswordResetScreen> {
   final _formKey = GlobalKey<FormState>();
   final TextEditingController _tokenController = TextEditingController();
   final TextEditingController _newPasswordController = TextEditingController();
-  final TextEditingController _confirmPasswordController = TextEditingController();
-  bool _isObscureNewPassword = true;
-  bool _isObscureConfirmPassword = true;
-  bool _isLoading = false;
+
+  @override
+  void dispose() {
+    _tokenController.dispose();
+    _newPasswordController.dispose();
+    super.dispose();
+  }
 
   Future<void> _handleResetPassword() async {
     if (!(_formKey.currentState?.validate() ?? false)) {
       return;
     }
 
-    setState(() => _isLoading = true);
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
+    final result = await authProvider.resetPassword(
+      _tokenController.text,
+      _newPasswordController.text,
+    );
 
-    try {
-      final authProvider = Provider.of<AuthProvider>(context, listen: false);
-      final result = await authProvider.changePassword(
-        _tokenController.text,
-        _newPasswordController.text,
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(result['message'])),
       );
-
-      if (mounted) {
-        if (result['status']) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(result['message'])),
-          );
-          Navigator.pushNamedAndRemoveUntil(
-            context,
-            '/login',
-                (route) => false,
-          );
-        } else {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(result['message'])),
-          );
-        }
-      }
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Password reset failed: ${e.toString()}')),
+      if (result['status']) {
+        Navigator.pushNamedAndRemoveUntil(
+          context,
+          '/login',
+              (route) => false,
         );
       }
-    } finally {
-      if (mounted) {
-        setState(() => _isLoading = false);
-      }
     }
-  }
-
-  @override
-  void dispose() {
-    _tokenController.dispose();
-    _newPasswordController.dispose();
-    _confirmPasswordController.dispose();
-    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        centerTitle: true,
-        title: Text(
-          Strings.resetPasswordTitle,
-          style: const TextStyle(color: Colors.white),
-        ),
+        title: const Text(Strings.resetPasswordTitle, style: TextStyle(color: Colors.white)),
         backgroundColor: Colors.blueAccent,
       ),
-      body: SingleChildScrollView(
+      body: Padding(
+        padding: const EdgeInsets.all(16),
         child: Form(
           key: _formKey,
-          autovalidateMode: AutovalidateMode.onUserInteraction,
-          child: Padding(
-            padding: const EdgeInsets.all(30),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                const SizedBox(height: 30),
-                Text(
-                  Strings.resetPasswordInstruction,
-                  style: const TextStyle(fontSize: 16),
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 20),
-                InputField(
-                  hintText: 'Enter reset token',
-                  labelText: 'Token',
-                  icon: const Icon(Icons.vpn_key),
-                  controller: _tokenController,
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Please enter the reset token';
-                    }
-                    return null;
-                  },
-                ),
-                InputField.passwordField(
-                  Strings.hintPasswordTxt,
-                  Strings.newPasswordLabel,
-                  const Icon(Icons.lock),
-                  controller: _newPasswordController,
-                  obscureText: _isObscureNewPassword,
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return Strings.emptyPasswordError;
-                    }
-                    if (value.length < 6) {
-                      return Strings.shortPasswordError;
-                    }
-                    return null;
-                  },
-                  suffixIcon: IconButton(
-                    icon: Icon(
-                      _isObscureNewPassword ? Icons.visibility_off : Icons.visibility,
-                    ),
-                    onPressed: () {
-                      setState(() {
-                        _isObscureNewPassword = !_isObscureNewPassword;
-                      });
-                    },
-                  ),
-                ),
-                InputField.passwordField(
-                  Strings.hintConfirmPasswordTxt,
-                  Strings.confirmPasswordLabel,
-                  const Icon(Icons.lock),
-                  controller: _confirmPasswordController,
-                  obscureText: _isObscureConfirmPassword,
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return Strings.emptyConfirmPasswordError;
-                    }
-                    if (value != _newPasswordController.text) {
-                      return Strings.passwordMismatchError;
-                    }
-                    return null;
-                  },
-                  suffixIcon: IconButton(
-                    icon: Icon(
-                      _isObscureConfirmPassword
-                          ? Icons.visibility_off
-                          : Icons.visibility,
-                    ),
-                    onPressed: () {
-                      setState(() {
-                        _isObscureConfirmPassword = !_isObscureConfirmPassword;
-                      });
-                    },
-                  ),
-                ),
-                const SizedBox(height: 20),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 30),
-                  child: _isLoading
-                      ? const Center(child: CircularProgressIndicator())
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Text(Strings.resetPasswordInstruction),
+              const SizedBox(height: 20),
+              InputField(
+                hintText: 'Enter the token',
+                labelText: 'Token',
+                icon: const Icon(Icons.vpn_key),
+                controller: _tokenController,
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Please enter the token';
+                  }
+                  return null;
+                },
+              ),
+              InputField(
+                hintText: Strings.hintPasswordTxt,
+                labelText: Strings.newPasswordLabel,
+                icon: const Icon(Icons.lock),
+                controller: _newPasswordController,
+                obscureText: true,
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return Strings.emptyPasswordError;
+                  }
+                  if (value.length < 6) {
+                    return Strings.shortPasswordError;
+                  }
+                  return null;
+                },
+              ),
+              const SizedBox(height: 16),
+              Consumer<AuthProvider>(
+                builder: (context, authProvider, child) {
+                  return authProvider.isLoading
+                      ? const CircularProgressIndicator()
                       : ElevatedButton(
                     onPressed: _handleResetPassword,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.blueAccent,
                       minimumSize: const Size(double.infinity, 50),
                     ),
-                    child: Text(
+                    child: const Text(
                       Strings.resetPasswordButtonTxt,
-                      style: const TextStyle(color: Colors.white),
+                      style: TextStyle(color: Colors.white),
                     ),
-                  ),
-                ),
-              ],
-            ),
+                  );
+                },
+              ),
+            ],
           ),
         ),
       ),

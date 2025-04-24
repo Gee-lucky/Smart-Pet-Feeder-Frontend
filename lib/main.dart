@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:kissima/pages/forgot_password.dart';
 import 'package:kissima/pages/password_reset.dart';
+import 'package:kissima/providers/feeding_schedule_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:kissima/pages/splash_screen.dart';
@@ -10,7 +11,6 @@ import 'package:kissima/pages/schedule.dart';
 import 'package:kissima/pages/settings.dart';
 import 'package:kissima/pages/home.dart';
 import 'package:kissima/providers/auth_provider.dart';
-import 'package:kissima/providers/schedule_provider.dart';
 import 'package:kissima/providers/settings_provider.dart';
 
 void main() async {
@@ -22,7 +22,7 @@ void main() async {
       providers: [
         ChangeNotifierProvider(create: (_) => AuthProvider()),
         ChangeNotifierProvider(create: (_) => SettingsProvider(prefs: prefs)),
-        ChangeNotifierProvider(create: (_) => FeedingScheduleProvider(prefs)),
+        ChangeNotifierProvider(create: (_) => FeedingScheduleProvider()),
       ],
       child: const SmartPetFeederApp(),
     ),
@@ -50,9 +50,9 @@ class SmartPetFeederApp extends StatelessWidget {
           themeMode: settingsProvider.themeMode,
           initialRoute: '/splash',
           routes: {
-            '/splash': (context) => const MySplashScreen(),
+            '/splash': (context) => const SplashScreen(),
             '/login': (context) => const LoginPage(),
-            '/register': (context) => const RegisterPage(),
+            '/register': (context) => const RegisterScreen(),
             '/home': (context) => const HomeScreen(),
             '/schedule': (context) => const ScheduleScreen(),
             '/settings': (context) => const SettingsScreen(),

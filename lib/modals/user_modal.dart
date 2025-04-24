@@ -1,52 +1,43 @@
 class User {
   final String id;
+  final String firstName;
+  final String middleName;
+  final String lastName;
   final String username;
-  final String? email;
-  final String accessToken;
-  final String? firstName;
-  final String? userType;
-  final String? lastName;
-  final String? phone;
-  final String? refreshToken;
+  final String email;
+  final String phone;
 
   User({
     required this.id,
+    required this.firstName,
+    required this.middleName,
+    required this.lastName,
     required this.username,
-    this.email,
-    required this.accessToken,
-    this.firstName,
-    this.userType,
-    this.refreshToken,
-    this.lastName,
-    this.phone,
+    required this.email,
+    required this.phone,
   });
 
   factory User.fromJson(Map<String, dynamic> json) {
-    final userData = json['user'] ?? json;
-    final tokens = json['tokens'] ?? {};
     return User(
-      id: userData['id']?.toString() ?? '',
-      username: userData['username'] ?? '',
-      email: userData['email'],
-      accessToken: tokens['access'] ?? userData['access_token'] ?? '',
-      refreshToken: tokens['refresh'] ?? userData['refresh_token'],
-      firstName: userData['first_name'],
-      lastName: userData['last_name'],
-      phone: userData['phone_number'],
-      userType: userData['userType'],
+      id: json['id'].toString(),
+      firstName: json['first_name'] ?? '',
+      middleName: json['middle_name'] ?? '',
+      lastName: json['last_name'] ?? '',
+      username: json['username'] ?? '',
+      email: json['email'] ?? '',
+      phone: json['phone_number'] ?? '',
     );
   }
 
-  @override
-  String toString() {
-    return 'User{'
-        'id: $id, '
-        'username: $username, '
-        'email: $email, '
-        'accessToken: ${accessToken.isNotEmpty ? "****" : "empty"}, '
-        'firstName: $firstName, '
-        'lastName: $lastName, '
-        'phone: $phone, '
-        'userType: $userType}';
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'first_name': firstName,
+      'middle_name': middleName,
+      'last_name': lastName,
+      'username': username,
+      'email': email,
+      'phone_number': phone,
+    };
   }
 }
