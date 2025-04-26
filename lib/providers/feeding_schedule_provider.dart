@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import '../modals/feeding_schedule.dart';
 
@@ -65,6 +66,48 @@ class FeedingScheduleProvider with ChangeNotifier {
       _setLoading(false);
     }
   }
+  Future<Map<String, dynamic>> scheduleFeeding(DateTime dateTime, double portion) async {
+
+    try {
+      final response = await http.post(
+        Uri.parse('https://your-backend-api/schedule-feeding'), // Replace with your backend API endpoint
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({
+          'dateTime': dateTime.toIso8601String(),
+          'portion': portion,
+        }),
+      );
+
+      if (response.statusCode == 200) {
+        notifyListeners();
+        return {'message': 'Feeding scheduled successfully'};
+      } else {
+        return {'message': 'Failed to schedule feeding'};
+      }
+    } catch (e) {
+      return {'message': 'Error: $e'};
+    }
+  }
+
+  Future<Map<String, dynamic>> feedNow() async {
+    try {
+
+      final response = await http.post(
+        Uri.parse('https://your-backend-api/feed-now'), // Replace with your backend API endpoint
+        headers: {'Content-Type': 'application/json'},
+      );
+
+      if (response.statusCode == 200) {
+        notifyListeners();
+        return {'message': 'Feeding triggered successfully'};
+      } else {
+        return {'message': 'Failed to trigger feeding'};
+      }
+    } catch (e) {
+      return {'message': 'Error: $e'};
+    }
+  }
+
 
   Future<void> _saveSchedules() async {
     final prefs = await SharedPreferences.getInstance();

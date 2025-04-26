@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:kissima/pages/forgot_password.dart';
 import 'package:kissima/pages/password_reset.dart';
 import 'package:kissima/providers/feeding_schedule_provider.dart';
@@ -39,6 +40,17 @@ class SmartPetFeederApp extends StatelessWidget {
         return MaterialApp(
           debugShowCheckedModeBanner: false,
           title: 'Smart Pet Feeder',
+          locale: settingsProvider.locale,
+          supportedLocales: const [
+            Locale('en', ''), // English
+            Locale('sw', ''), // Swahili
+          ],
+          localizationsDelegates: [
+            // AppLocalizations.delegate,
+            GlobalMaterialLocalizations.delegate,
+            GlobalWidgetsLocalizations.delegate,
+            GlobalCupertinoLocalizations.delegate,
+          ],
           theme: ThemeData(
             primarySwatch: Colors.blue,
             brightness: Brightness.light,

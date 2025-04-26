@@ -42,4 +42,11 @@ class SettingsProvider with ChangeNotifier {
     await prefs.setDouble('sensitivity', value);
     notifyListeners();
   }
+
+  Future<void> setLanguage(String languageCode) async {
+    _locale = Locale(languageCode, '');
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('language', languageCode);
+    notifyListeners();
+  }
 }

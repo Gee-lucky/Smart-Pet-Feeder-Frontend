@@ -20,6 +20,7 @@ class SettingsScreenState extends State<SettingsScreen> {
   final TextEditingController _phoneController = TextEditingController();
   bool _isEditing = false;
 
+
   @override
   void dispose() {
     _firstNameController.dispose();
@@ -75,6 +76,7 @@ class SettingsScreenState extends State<SettingsScreen> {
             children: [
               Row(
                 children: [
+
                   const CircleAvatar(
                     radius: 30,
                     backgroundColor: Colors.blueAccent,
