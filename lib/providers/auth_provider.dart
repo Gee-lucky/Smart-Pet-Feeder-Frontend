@@ -1,8 +1,8 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:kissima/modals/user_preference.dart';
 import 'package:kissima/services/auth_requests.dart';
 import '../modals/user_modal.dart';
+import '../modals/user_preference.dart';
 
 class AuthProvider with ChangeNotifier {
   User? _user;
@@ -135,7 +135,7 @@ class AuthProvider with ChangeNotifier {
       final responseData = jsonDecode(response.body);
 
       if (response.statusCode == 200) {
-        await UserPreferences.clear();
+        await UserPreferences.clearUser();
         _user = null;
         _accessToken = null;
         _refreshToken = null;
@@ -264,3 +264,4 @@ class AuthProvider with ChangeNotifier {
     notifyListeners();
   }
 }
+

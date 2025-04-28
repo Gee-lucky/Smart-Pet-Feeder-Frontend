@@ -3,7 +3,8 @@ class Strings {
   static const registerTitle = 'Register';
   static const forgotPasswordTitle = 'Forgot Password';
   static const resetPasswordTitle = 'Reset Password';
-  static const forgotPasswordInstruction = 'Enter your email to receive a password reset link';
+  static const forgotPasswordInstruction =
+      'Enter your email to receive a password reset link';
   static const resetPasswordInstruction = 'Enter the token and new password';
   static const hintFirstnameTxt = 'Enter your first name';
   static const firstnameLabel = 'First Name';
