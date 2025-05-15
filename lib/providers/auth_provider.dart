@@ -3,7 +3,6 @@ import 'package:jwt_decode/jwt_decode.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../services/api_service.dart';
 
-
 class AuthProvider with ChangeNotifier {
   final ApiService _apiService = ApiService();
   bool _isLoading = false;
@@ -11,11 +10,13 @@ class AuthProvider with ChangeNotifier {
   String? _errorMessage;
   String? _accessToken;
   int? _userId;
+  String? _email; // Added email property
 
   bool get isLoading => _isLoading;
   bool get isAuthenticated => _isAuthenticated;
   String? get errorMessage => _errorMessage;
   int? get userId => _userId;
+  String? get email => _email; // Getter for email
 
   Future<bool> register(String email, String password, String firstName, String lastName) async {
     _isLoading = true;
@@ -28,6 +29,7 @@ class AuthProvider with ChangeNotifier {
         final data = response['body'];
         _accessToken = data['access'];
         _userId = Jwt.parseJwt(_accessToken!)['user_id'];
+        _email = email; // Store the input email (or from data if API provides it)
         await _apiService.saveTokens(data['access'], data['refresh']);
         _isAuthenticated = true;
         _isLoading = false;
@@ -57,7 +59,8 @@ class AuthProvider with ChangeNotifier {
       if (response['statusCode'] == 200) {
         final data = response['body'];
         _accessToken = data['access'];
-        _userId = Jwt.parseJwt(_accessToken!)['user_id']; // Extract user_id from token
+        _userId = Jwt.parseJwt(_accessToken!)['user_id'];
+        _email = email; // Store the input email (or from data if API provides it)
         await _apiService.saveTokens(data['access'], data['refresh']);
         _isAuthenticated = true;
         _isLoading = false;
@@ -81,6 +84,7 @@ class AuthProvider with ChangeNotifier {
     _isAuthenticated = false;
     _userId = null;
     _accessToken = null;
+    _email = null; // Clear email on sign out
     final prefs = await SharedPreferences.getInstance();
     await prefs.clear();
     notifyListeners();

@@ -4,11 +4,12 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 class ApiService {
   static const String baseUrl = 'http://192.168.1.131:8000/api';
+  // static const String baseUrl = 'http://192.168.23.58:8000/api';
   static const String registerUrl = '$baseUrl/register/';
   static const String loginUrl = '$baseUrl/login/';
   static const String feedingsUrl = '$baseUrl/feedings/';
   static const String schedulesUrl = '$baseUrl/schedules/';
-  static const String logFeedingUrl = '$baseUrl/log-feeding/';
+  static const String logFeedingUrl = '$baseUrl/feedings/create/';
 
   Future<Map<String, dynamic>> register(String email, String password, String firstName, String lastName) async {
     try {

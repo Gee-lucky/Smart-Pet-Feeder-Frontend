@@ -6,11 +6,15 @@ plugins {
 }
 
 android {
+
+    compileSdkVersion 35
+
     namespace = "com.example.kissima"
     compileSdk = flutter.compileSdkVersion
     ndkVersion = flutter.ndkVersion
 
     compileOptions {
+        coreLibraryDesugaringEnabled true
         sourceCompatibility = JavaVersion.VERSION_1_8
         targetCompatibility = JavaVersion.VERSION_1_8
     }
@@ -20,6 +24,7 @@ android {
     }
 
     defaultConfig {
+        multiDexEnabled true
         // Add your web client ID from Firebase
         // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
         applicationId = "com.example.kissima"
@@ -30,6 +35,15 @@ android {
         versionCode = flutter.versionCode
         versionName = flutter.versionName
         
+    }
+
+    dependencies {
+        // For AGP 7.4+
+        coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:2.1.5'
+        // For AGP 7.3
+        // coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:1.2.3'
+        // For AGP 4.0 to 7.2
+        // coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:1.1.9'
     }
 
     buildTypes {
